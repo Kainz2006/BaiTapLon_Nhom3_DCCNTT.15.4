@@ -1,8 +1,7 @@
 package dao;
-
-import model.KhachHang;
 import java.sql.SQLException;
 import java.util.List;
+import model.KhachHang;
 
 public interface KhachHangDAO {
     List<KhachHang> getAllKhachHang();
@@ -10,6 +9,8 @@ public interface KhachHangDAO {
     boolean createKhachHang(KhachHang khachHang);
     boolean updateKhachHang(KhachHang khachHang);
     boolean deleteKhachHang(long id);
-    // Thêm dòng này để khai báo phương thức mới
     boolean khachHangCoHoaDon(long khachHangId) throws SQLException;
+    
+    // BỔ SUNG: Phương thức tìm kiếm khách hàng
+    List<KhachHang> searchKhachHang(String keyword);
 }

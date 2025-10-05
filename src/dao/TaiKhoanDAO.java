@@ -1,8 +1,8 @@
 package dao;
 
-import model.TaiKhoan;
-import java.sql.Timestamp; // Thêm import này
+import java.sql.Timestamp;
 import java.util.List;
+import model.TaiKhoan;
 
 public interface TaiKhoanDAO {
     List<TaiKhoan> getAllTaiKhoan();
@@ -12,4 +12,7 @@ public interface TaiKhoanDAO {
     boolean updateTaiKhoan(TaiKhoan taiKhoan);
     boolean deleteTaiKhoan(long id);
     boolean updateThoiGianDangNhapCuoi(long id, Timestamp thoiGian);
+    
+    // BỔ SUNG: Phương thức tìm kiếm tài khoản
+    List<TaiKhoan> searchTaiKhoan(String keyword);
 }

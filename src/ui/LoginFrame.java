@@ -10,8 +10,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
-import java.sql.Timestamp; // Thêm import này
+import java.sql.Timestamp;
 import java.util.Objects;
 
 public class LoginFrame extends JFrame {
@@ -20,6 +19,7 @@ public class LoginFrame extends JFrame {
     private final JRadioButton rbAdmin;
     private final JRadioButton rbNhanVien;
     private final JButton btnDangNhap;
+    private final JButton btnThoat; // NEW: Nút Thoát
     private final TaiKhoanDAO taiKhoanDAO;
 
     public LoginFrame() {
@@ -92,16 +92,36 @@ public class LoginFrame extends JFrame {
         gbc.gridwidth = 2;
         panel.add(vaiTroPanel, gbc);
 
+        // Panel chứa 2 nút (Đăng nhập và Thoát)
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 0)); // 1 hàng, 2 cột
+        buttonPanel.setBackground(Color.decode("#F5F5F5"));
+        
         // Nút đăng nhập
         btnDangNhap = new JButton("Đăng nhập");
         btnDangNhap.setFont(new Font("Arial", Font.BOLD, 14));
         btnDangNhap.setBackground(Color.decode("#28A745"));
         btnDangNhap.setForeground(Color.WHITE);
         btnDangNhap.setFocusPainted(false);
+        
+        // NEW: Nút Thoát
+        btnThoat = new JButton("Thoát");
+        btnThoat.setFont(new Font("Arial", Font.BOLD, 14));
+        btnThoat.setBackground(Color.decode("#DC3545")); // Màu đỏ cảnh báo
+        btnThoat.setForeground(Color.WHITE);
+        btnThoat.setFocusPainted(false);
+        
+        buttonPanel.add(btnDangNhap);
+        buttonPanel.add(btnThoat);
+        
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
-        panel.add(btnDangNhap, gbc);
+        panel.add(buttonPanel, gbc); // Thêm Panel chứa 2 nút
+
+        // NEW: Thêm sự kiện cho nút Thoát
+        btnThoat.addActionListener(e -> {
+            System.exit(0); // Đóng toàn bộ chương trình
+        });
         
         btnDangNhap.addActionListener(new ActionListener() {
             @Override

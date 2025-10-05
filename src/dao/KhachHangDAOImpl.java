@@ -119,4 +119,37 @@ public class KhachHangDAOImpl implements KhachHangDAO {
         }
         return false;
     }
+    @Override
+public List<KhachHang> searchKhachHang(String keyword) {
+    List<KhachHang> list = new ArrayList<>();
+    String sql = "SELECT * FROM khachhang WHERE hoTen LIKE ? OR soDienThoai LIKE ? OR diaChi LIKE ?";
+    String searchKeyword = "%" + keyword + "%";
+    Connection con = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+
+    try {
+        con = DBHelper.getConnection();
+        ps = con.prepareStatement(sql);
+        ps.setString(1, searchKeyword);
+        ps.setString(2, searchKeyword);
+        ps.setString(3, searchKeyword);
+        rs = ps.executeQuery();
+
+        while (rs.next()) {
+            KhachHang kh = new KhachHang(
+                rs.getLong("id"),
+                rs.getString("hoTen"),
+                rs.getString("soDienThoai"),
+                rs.getString("diaChi")
+            );
+            list.add(kh);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        // Đảm bảo bạn có logic đóng tài nguyên (con, ps, rs) ở đây
+    }
+    return list;
+}
 }

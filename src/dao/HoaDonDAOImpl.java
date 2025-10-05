@@ -15,7 +15,7 @@ public class HoaDonDAOImpl implements HoaDonDAO {
         try (Connection con = DBHelper.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            
+                
             while (rs.next()) {
                 list.add(new HoaDon(
                     rs.getLong("id"),
@@ -88,5 +88,51 @@ public class HoaDonDAOImpl implements HoaDonDAO {
             e.printStackTrace();
         }
         return false;
+    }
+    
+    // BỔ SUNG: Phương thức tìm kiếm hóa đơn
+    @Override
+    public List<HoaDon> searchHoaDon(String keyword) {
+        List<HoaDon> list = new ArrayList<>();
+        // Câu lệnh SQL này tìm kiếm theo ID Hóa đơn, Tên Đăng nhập của Nhân viên (từ bảng TaiKhoan) 
+        // hoặc Tên Khách hàng (từ bảng KhachHang).
+        // Chúng ta sử dụng LEFT JOIN để đảm bảo hóa đơn vẫn được trả về ngay cả khi thông tin KH/TK bị thiếu.
+        String sql = "SELECT h.* " +
+                     "FROM hoadon h " +
+                     "LEFT JOIN taikhoan tk ON h.taiKhoanId = tk.id " +
+                     "LEFT JOIN khachhang kh ON h.khachHangId = kh.id " +
+                     "WHERE CAST(h.id AS CHAR) LIKE ? OR tk.tenDangNhap LIKE ? OR kh.hoTen LIKE ?";
+
+        String searchKeyword = "%" + keyword + "%";
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBHelper.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setString(1, searchKeyword); // Tìm theo ID Hóa đơn (dạng chuỗi)
+            ps.setString(2, searchKeyword); // Tìm theo Tên Đăng nhập Nhân viên
+            ps.setString(3, searchKeyword); // Tìm theo Họ Tên Khách hàng
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new HoaDon(
+                    rs.getLong("id"),
+                    rs.getTimestamp("ngayLap"),
+                    rs.getDouble("tongTien"),
+                    rs.getLong("khachHangId"),
+                    rs.getLong("taiKhoanId")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Đóng tài nguyên
+            try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (ps != null) ps.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (con != null) con.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+        return list;
     }
 }

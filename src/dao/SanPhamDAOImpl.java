@@ -1,4 +1,4 @@
-package dao;
+ package dao;
 
 import helper.DBHelper;
 import model.SanPham;
@@ -28,7 +28,6 @@ public class SanPhamDAOImpl implements SanPhamDAO {
                 ));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return list;
     }
@@ -53,7 +52,6 @@ public class SanPhamDAOImpl implements SanPhamDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -80,7 +78,6 @@ public class SanPhamDAOImpl implements SanPhamDAO {
                 return true;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -100,7 +97,6 @@ public class SanPhamDAOImpl implements SanPhamDAO {
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -113,7 +109,6 @@ public class SanPhamDAOImpl implements SanPhamDAO {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -127,5 +122,41 @@ public boolean updateSoLuongTon(long sanPhamId, int soLuong) throws SQLException
         int rowsAffected = ps.executeUpdate();
         return rowsAffected > 0;
     }
+}
+@Override
+public List<SanPham> searchSanPham(String keyword) {
+    List<SanPham> list = new ArrayList<>();
+    String sql = "SELECT * FROM sanpham WHERE ten LIKE ? OR hang LIKE ? OR loai LIKE ?";
+    String searchKeyword = "%" + keyword + "%";
+    Connection con = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+
+    try {
+        con = DBHelper.getConnection();
+        ps = con.prepareStatement(sql);
+        ps.setString(1, searchKeyword);
+        ps.setString(2, searchKeyword);
+        ps.setString(3, searchKeyword);
+        rs = ps.executeQuery();
+
+        while (rs.next()) {
+            SanPham sp = new SanPham(
+                rs.getInt("id"),
+                rs.getString("ten"),
+                rs.getString("hang"),
+                rs.getDouble("gia"),
+                rs.getInt("tonKho"),
+                rs.getString("loai"),
+                rs.getString("tinhTrang")
+            );
+            list.add(sp);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        // Đảm bảo bạn có logic đóng tài nguyên (con, ps, rs) ở đây
+    }
+    return list;
 }
 }

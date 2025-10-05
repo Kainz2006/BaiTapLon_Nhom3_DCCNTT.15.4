@@ -136,4 +136,38 @@ public class TaiKhoanDAOImpl implements TaiKhoanDAO {
             return false;
         }
     }
+    // Giả định đây là phần bổ sung vào cuối lớp TaiKhoanDAOImpl hiện tại của bạn
+
+@Override
+public List<TaiKhoan> searchTaiKhoan(String keyword) {
+    List<TaiKhoan> list = new ArrayList<>();
+    String sql = "SELECT * FROM taikhoan WHERE tenDangNhap LIKE ? OR vaiTro LIKE ?";
+    String searchKeyword = "%" + keyword + "%";
+    Connection con = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+
+    try {
+        con = DBHelper.getConnection();
+        ps = con.prepareStatement(sql);
+        ps.setString(1, searchKeyword);
+        ps.setString(2, searchKeyword);
+        rs = ps.executeQuery();
+
+        while (rs.next()) {
+            TaiKhoan tk = new TaiKhoan();
+            tk.setId(rs.getLong("id"));
+            tk.setTenDangNhap(rs.getString("tenDangNhap"));
+            tk.setMatKhau(rs.getString("matKhau"));
+            tk.setVaiTro(rs.getString("vaiTro"));
+            tk.setThoiGianDangNhapCuoi(rs.getTimestamp("thoiGianDangNhapCuoi"));
+            list.add(tk);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        // Đảm bảo bạn có logic đóng tài nguyên (con, ps, rs) ở đây
+    }
+    return list;
+}
 }

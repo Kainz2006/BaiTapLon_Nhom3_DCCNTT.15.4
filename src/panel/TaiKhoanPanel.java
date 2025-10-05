@@ -8,8 +8,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 public class TaiKhoanPanel extends JPanel {
@@ -18,6 +16,11 @@ public class TaiKhoanPanel extends JPanel {
     private JTable table;
     private TaiKhoan currentTaiKhoan;
     private JLabel lblLastLogin;
+    
+    // NEW: Các thành phần tìm kiếm
+    private JTextField txtTimKiem; 
+    private JButton btnTimKiem;    
+    private JButton btnLamMoi; // Sử dụng lại nút này để reset tìm kiếm
 
     public TaiKhoanPanel(TaiKhoan taiKhoan) {
         this.currentTaiKhoan = taiKhoan;
@@ -40,8 +43,9 @@ public class TaiKhoanPanel extends JPanel {
         }
     }
     
+    // THAY THẾ: Phương thức setupAdminView được sửa đổi để thêm giao diện tìm kiếm
     private void setupAdminView() {
-        // Bảng dữ liệu
+        // 1. Bảng dữ liệu Setup
         String[] columnNames = {"ID", "Tên Đăng Nhập", "Vai Trò", "Thời Gian Đăng Nhập Cuối"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -64,9 +68,25 @@ public class TaiKhoanPanel extends JPanel {
                 TitledBorder.LEFT, TitledBorder.TOP,
                 new Font("Segoe UI", Font.BOLD, 14), Color.decode("#343A40")
         ));
-        add(scrollPane, BorderLayout.CENTER);
 
-        // Panel chức năng
+        // 2. Panel Tìm kiếm Setup (NEW)
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        txtTimKiem = new JTextField(30);
+        btnTimKiem = new JButton("Tìm Kiếm");
+        
+        searchPanel.setBackground(Color.decode("#F0F2F5"));
+        searchPanel.add(new JLabel("Tìm kiếm (Tên ĐN, Vai Trò):"));
+        searchPanel.add(txtTimKiem);
+        searchPanel.add(btnTimKiem);
+        
+        // Panel trung tâm chứa tìm kiếm và bảng
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(searchPanel, BorderLayout.NORTH);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        add(centerPanel, BorderLayout.CENTER);
+
+        // 3. Panel chức năng (Control Panel)
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 5));
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         controlPanel.setBackground(Color.decode("#F0F2F5"));
@@ -74,23 +94,16 @@ public class TaiKhoanPanel extends JPanel {
         JButton btnThem = new JButton("Thêm");
         JButton btnSua = new JButton("Sửa");
         JButton btnXoa = new JButton("Xóa");
-        JButton btnLamMoi = new JButton("Làm mới");
+        btnLamMoi = new JButton("Làm mới"); // Sửa lại thành biến instance
         
         // Thiết lập màu sắc và font cho các nút
-        btnThem.setBackground(Color.decode("#28A745"));
-        btnThem.setForeground(Color.WHITE);
-        btnSua.setBackground(Color.decode("#FFC107"));
-        btnSua.setForeground(Color.BLACK);
-        btnXoa.setBackground(Color.decode("#DC3545"));
-        btnXoa.setForeground(Color.WHITE);
-        btnLamMoi.setBackground(Color.decode("#6C757D"));
-        btnLamMoi.setForeground(Color.WHITE);
-
         Font buttonFont = new Font("Segoe UI", Font.BOLD, 14);
-        btnThem.setFont(buttonFont);
-        btnSua.setFont(buttonFont);
-        btnXoa.setFont(buttonFont);
-        btnLamMoi.setFont(buttonFont);
+        btnThem.setBackground(Color.decode("#28A745")); btnThem.setForeground(Color.WHITE);
+        btnSua.setBackground(Color.decode("#FFC107")); btnSua.setForeground(Color.BLACK);
+        btnXoa.setBackground(Color.decode("#DC3545")); btnXoa.setForeground(Color.WHITE);
+        btnLamMoi.setBackground(Color.decode("#6C757D")); btnLamMoi.setForeground(Color.WHITE);
+
+        btnThem.setFont(buttonFont); btnSua.setFont(buttonFont); btnXoa.setFont(buttonFont); btnLamMoi.setFont(buttonFont);
         
         controlPanel.add(btnThem);
         controlPanel.add(btnSua);
@@ -99,15 +112,26 @@ public class TaiKhoanPanel extends JPanel {
         
         add(controlPanel, BorderLayout.SOUTH);
         
-        // Thêm sự kiện
+        // 4. Thêm sự kiện
         btnThem.addActionListener(e -> themTaiKhoan());
         btnSua.addActionListener(e -> suaTaiKhoan());
         btnXoa.addActionListener(e -> xoaTaiKhoan());
-        btnLamMoi.addActionListener(e -> loadTaiKhoanData());
+        
+        // NEW: Sự kiện tìm kiếm và làm mới
+        btnTimKiem.addActionListener(e -> {
+            String keyword = txtTimKiem.getText().trim();
+            loadTaiKhoanData(keyword);
+        });
+        
+        btnLamMoi.addActionListener(e -> {
+            txtTimKiem.setText("");
+            loadTaiKhoanData(null);
+        });
 
-        loadTaiKhoanData();
+        loadTaiKhoanData(null); // Tải dữ liệu ban đầu
     }
     
+    // Phương thức setupEmployeeView giữ nguyên logic
     private void setupEmployeeView() {
         JPanel contentPanel = new JPanel(new GridBagLayout());
         contentPanel.setBackground(Color.decode("#F8F9FA"));
@@ -135,7 +159,6 @@ public class TaiKhoanPanel extends JPanel {
         JLabel lblRole = new JLabel("Vai trò: " + currentTaiKhoan.getVaiTro());
         lblRole.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         
-        // Sửa đổi dòng này để sử dụng biến toàn cục
         lblLastLogin = new JLabel("Đăng nhập gần nhất: ");
         lblLastLogin.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         
@@ -153,11 +176,10 @@ public class TaiKhoanPanel extends JPanel {
         buttonPanel.setBackground(Color.decode("#F8F9FA"));
         buttonPanel.add(btnDoiMatKhau);
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.CENTER;
         contentPanel.add(infoCard, gbc);
 
-        gbc.gridy = 1;
+        gbc.gridy = 1; gbc.anchor = GridBagConstraints.CENTER;
         contentPanel.add(buttonPanel, gbc);
 
         btnDoiMatKhau.addActionListener(e -> doiMatKhau());
@@ -168,26 +190,48 @@ public class TaiKhoanPanel extends JPanel {
         updateEmployeeInfo();
     }
     
-    // Thêm phương thức mới để cập nhật thông tin nhân viên
+    // Phương thức cập nhật thông tin nhân viên (Giữ nguyên)
     private void updateEmployeeInfo() {
-        // Lấy lại tài khoản từ DB để lấy thông tin mới nhất
         TaiKhoan latestTaiKhoan = taiKhoanDAO.getTaiKhoanById(currentTaiKhoan.getId());
         if (latestTaiKhoan != null) {
-            currentTaiKhoan = latestTaiKhoan; // Cập nhật đối tượng hiện tại
+            currentTaiKhoan = latestTaiKhoan;
             lblLastLogin.setText("Đăng nhập gần nhất: " + currentTaiKhoan.getThoiGianDangNhapCuoi());
         }
     }
     
-    private void loadTaiKhoanData() {
+    // THAY THẾ: Phương thức loadTaiKhoanData được cập nhật để nhận tham số tìm kiếm và xử lý ngoại lệ
+    private void loadTaiKhoanData(String keyword) {
         if (tableModel != null) {
-            tableModel.setRowCount(0);
-            List<TaiKhoan> danhSach = taiKhoanDAO.getAllTaiKhoan();
-            for (TaiKhoan tk : danhSach) {
-                Object[] row = {tk.getId(), tk.getTenDangNhap(), tk.getVaiTro(), tk.getThoiGianDangNhapCuoi()};
-                tableModel.addRow(row);
+            try {
+                tableModel.setRowCount(0);
+                List<TaiKhoan> danhSach;
+                
+                if (keyword != null && !keyword.isEmpty()) {
+                    danhSach = taiKhoanDAO.searchTaiKhoan(keyword);
+                } else {
+                    danhSach = taiKhoanDAO.getAllTaiKhoan();
+                }
+
+                if (danhSach.isEmpty()) {
+                    String message = keyword != null && !keyword.isEmpty() 
+                                     ? "Không tìm thấy tài khoản nào khớp với từ khóa: '" + keyword + "'."
+                                     : "Chưa có dữ liệu tài khoản nào trong hệ thống.";
+                    JOptionPane.showMessageDialog(this, message, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                
+                for (TaiKhoan tk : danhSach) {
+                    Object[] row = {tk.getId(), tk.getTenDangNhap(), tk.getVaiTro(), tk.getThoiGianDangNhapCuoi()};
+                    tableModel.addRow(row);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Không thể tải dữ liệu tài khoản: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             }
         }
     }
+    
+    // Giữ nguyên các phương thức CRUD
     
     private void themTaiKhoan() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thêm Tài Khoản", true);
@@ -239,7 +283,7 @@ public class TaiKhoanPanel extends JPanel {
                 tkMoi.setVaiTro("nhanvien");
                 if (taiKhoanDAO.createTaiKhoan(tkMoi)) {
                     JOptionPane.showMessageDialog(this, "Thêm tài khoản thành công!");
-                    loadTaiKhoanData();
+                    loadTaiKhoanData(null);
                     dialog.dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Thêm tài khoản thất bại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -253,35 +297,33 @@ public class TaiKhoanPanel extends JPanel {
     }
     
     private void suaTaiKhoan() {
-    int selectedRow = table.getSelectedRow();
-    if (selectedRow < 0) {
-        JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản cần sửa.", "Thông báo", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    
-    long id = (long) tableModel.getValueAt(selectedRow, 0);
-    String tenDN = (String) tableModel.getValueAt(selectedRow, 1);
-    
-    if ("admin".equalsIgnoreCase(tenDN)) {
-        JPasswordField pf = new JPasswordField();
-        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Xác minh tài khoản Admin", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (okCxl == JOptionPane.OK_OPTION) {
-            String password = new String(pf.getPassword());
-            
-            // Lấy lại tài khoản admin hiện tại từ cơ sở dữ liệu
-            TaiKhoan adminTaiKhoan = taiKhoanDAO.getTaiKhoanById(currentTaiKhoan.getId());
-            
-            // So sánh mật khẩu bạn nhập với mật khẩu của tài khoản admin đã được cập nhật
-            if (adminTaiKhoan != null && adminTaiKhoan.getMatKhau().equals(password)) {
-                showEditDialog(id, tenDN);
-            } else {
-                JOptionPane.showMessageDialog(this, "Mật khẩu Admin không đúng.", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản cần sửa.", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
         }
-    } else {
-        showEditDialog(id, tenDN);
+        
+        long id = (long) tableModel.getValueAt(selectedRow, 0);
+        String tenDN = (String) tableModel.getValueAt(selectedRow, 1);
+        
+        if ("admin".equalsIgnoreCase(tenDN)) {
+            JPasswordField pf = new JPasswordField();
+            int okCxl = JOptionPane.showConfirmDialog(this, pf, "Xác minh tài khoản Admin", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (okCxl == JOptionPane.OK_OPTION) {
+                String password = new String(pf.getPassword());
+                
+                TaiKhoan adminTaiKhoan = taiKhoanDAO.getTaiKhoanById(currentTaiKhoan.getId());
+                
+                if (adminTaiKhoan != null && adminTaiKhoan.getMatKhau().equals(password)) {
+                    showEditDialog(id, tenDN);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Mật khẩu Admin không đúng.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } else {
+            showEditDialog(id, tenDN);
+        }
     }
-}
 
     private void showEditDialog(long id, String tenDN) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sửa Tài Khoản", true);
@@ -311,13 +353,12 @@ public class TaiKhoanPanel extends JPanel {
         gbc.gridx = 1; gbc.gridy = 1; gbc.weightx = 1.0; gbc.anchor = GridBagConstraints.WEST;
         mainPanel.add(txtMatKhauMoi, gbc);
         
-        // Chỉ cho phép admin tự sửa vai trò của mình, hoặc sửa vai trò của người khác
         if ("admin".equalsIgnoreCase(currentTaiKhoan.getVaiTro())) {
             gbc.gridx = 0; gbc.gridy = 2; gbc.anchor = GridBagConstraints.EAST;
             mainPanel.add(new JLabel("Vai trò:"), gbc);
             gbc.gridx = 1; gbc.gridy = 2; gbc.weightx = 1.0; gbc.anchor = GridBagConstraints.WEST;
             mainPanel.add(cmbVaiTro, gbc);
-            // Lấy vai trò hiện tại của tài khoản và đặt cho JComboBox
+            
             TaiKhoan taiKhoanHienTai = taiKhoanDAO.getTaiKhoanById(id);
             if (taiKhoanHienTai != null) {
                 cmbVaiTro.setSelectedItem(taiKhoanHienTai.getVaiTro());
@@ -349,13 +390,13 @@ public class TaiKhoanPanel extends JPanel {
                 }
 
                 if (taiKhoanDAO.updateTaiKhoan(tk)) {
-                    // Cập nhật lại đối tượng currentTaiKhoan nếu đây là tài khoản đang đăng nhập
                     if (currentTaiKhoan.getId() == tk.getId()) {
                         currentTaiKhoan.setMatKhau(tk.getMatKhau());
                         currentTaiKhoan.setVaiTro(tk.getVaiTro());
+                        updateEmployeeInfo(); // Cập nhật lại giao diện Employee nếu cần
                     }
                     JOptionPane.showMessageDialog(this, "Cập nhật tài khoản thành công!");
-                    loadTaiKhoanData();
+                    loadTaiKhoanData(null);
                     dialog.dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Cập nhật thất bại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -385,7 +426,7 @@ public class TaiKhoanPanel extends JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             if (taiKhoanDAO.deleteTaiKhoan(id)) {
                 JOptionPane.showMessageDialog(this, "Xóa tài khoản thành công!");
-                loadTaiKhoanData();
+                loadTaiKhoanData(null);
             } else {
                 JOptionPane.showMessageDialog(this, "Xóa tài khoản thất bại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
@@ -441,7 +482,6 @@ public class TaiKhoanPanel extends JPanel {
                 return;
             }
             
-            // Lấy lại tài khoản hiện tại từ cơ sở dữ liệu để so sánh chính xác nhất.
             TaiKhoan taiKhoanHienTaiMoiNhat = taiKhoanDAO.getTaiKhoanById(currentTaiKhoan.getId());
             
             if (taiKhoanHienTaiMoiNhat == null || !taiKhoanHienTaiMoiNhat.getMatKhau().equals(matKhauHienTai)) {
@@ -451,10 +491,8 @@ public class TaiKhoanPanel extends JPanel {
             
             taiKhoanHienTaiMoiNhat.setMatKhau(matKhauMoi);
             if (taiKhoanDAO.updateTaiKhoan(taiKhoanHienTaiMoiNhat)) {
-                // Cập nhật lại đối tượng trong bộ nhớ sau khi đổi thành công.
                 currentTaiKhoan.setMatKhau(matKhauMoi);
                 JOptionPane.showMessageDialog(dialog, "Đổi mật khẩu thành công!");
-                // Gọi phương thức để cập nhật lại thông tin trên giao diện
                 updateEmployeeInfo(); 
                 dialog.dispose();
             } else {
